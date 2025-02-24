@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"log"
-    "context"
-    "time"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -11,8 +12,10 @@ import (
 	"github.com/paddyoneill/perftest-go/pkg/perftest"
 )
 
+var serverAddr string
+
 func main() {
-	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to gRPC server: %v", err)
 	}
@@ -26,14 +29,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to run GetPort: %v", err)
 	}
-    
-    port := portResp.GetValue()
+
+	port := portResp.GetValue()
 	log.Printf("Reponse from gRPC server has port %d", port)
 
-    perftestResp, err := client.StartPerftest(ctx, &perftest.PerftestRequest{Port: port})
-    if err != nil {
-        log.Fatal("failed to start perftest")
-    }
+	perftestResp, err := client.StartPerftest(ctx, &perftest.PerftestRequest{Port: port})
+	if err != nil {
+		log.Fatal("failed to start perftest")
+	}
 
-    log.Printf("Response from server: %s", perftestResp.GetMessage())
+	log.Printf("Response from server: %s", perftestResp.GetMessage())
+}
+
+func init() {
+	flag.StringVar(&serverAddr, "server", "localhost:8080", "address of server")
+	flag.Parse()
 }

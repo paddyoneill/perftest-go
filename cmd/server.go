@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-    "fmt"
+	"fmt"
 	"log"
 	"net"
 
@@ -16,19 +16,19 @@ type PerftestServer struct {
 }
 
 func (server *PerftestServer) GetPort(context.Context, *perftest.PortRequest) (*perftest.PortResponse, error) {
-    port, err := getAvailablePort()
+	port, err := getAvailablePort()
 
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
 	return &perftest.PortResponse{Value: port}, nil
 }
 
 func (server *PerftestServer) StartPerftest(ctx context.Context, req *perftest.PerftestRequest) (*perftest.PerftestResponse, error) {
-    port := req.GetPort()
-    log.Printf("Starting perftest on port %d", port)
-    return &perftest.PerftestResponse{Message: fmt.Sprintf("starting perftest on port %d", port)}, nil
+	port := req.GetPort()
+	log.Printf("Starting perftest on port %d", port)
+	return &perftest.PerftestResponse{Message: fmt.Sprintf("starting perftest on port %d", port)}, nil
 }
 
 func main() {
@@ -47,14 +47,14 @@ func main() {
 }
 
 func getAvailablePort() (int32, error) {
-    addr, err := net.ResolveTCPAddr("tcp", ":0"); 
-    if err != nil {
-        return -1, err
-    }
-    lis, err := net.ListenTCP("tcp", addr)
-    defer lis.Close()
-    if err != nil {
-        return -1, err
-    }
-    return int32(lis.Addr().(*net.TCPAddr).Port), nil
+	addr, err := net.ResolveTCPAddr("tcp", ":0")
+	if err != nil {
+		return -1, err
+	}
+	lis, err := net.ListenTCP("tcp", addr)
+	defer lis.Close()
+	if err != nil {
+		return -1, err
+	}
+	return int32(lis.Addr().(*net.TCPAddr).Port), nil
 }
