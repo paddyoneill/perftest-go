@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "github.com/paddyoneill/perftest-go/pkg/perftest";
+
+package perftest;
+
+service Perftest {
+    rpc GetPort(PerftestPortRequest) returns (PerftestPortResponse) {}
+}
+
+message PerftestPortRequest {}
+
+message PerftestPortResponse {
+    int32 value = 1;
+}
