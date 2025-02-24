@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.21.12
-// source: perftest.proto
+// source: pkg/perftest/perftest.proto
 
 package perftest
 
@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Perftest_GetPort_FullMethodName = "/perftest.Perftest/GetPort"
+	Perftest_GetPort_FullMethodName       = "/perftest.Perftest/GetPort"
+	Perftest_StartPerftest_FullMethodName = "/perftest.Perftest/StartPerftest"
 )
 
 // PerftestClient is the client API for Perftest service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PerftestClient interface {
-	GetPort(ctx context.Context, in *PerftestPortRequest, opts ...grpc.CallOption) (*PerftestPortResponse, error)
+	GetPort(ctx context.Context, in *PortRequest, opts ...grpc.CallOption) (*PortResponse, error)
+	StartPerftest(ctx context.Context, in *PerftestRequest, opts ...grpc.CallOption) (*PerftestResponse, error)
 }
 
 type perftestClient struct {
@@ -37,10 +39,20 @@ func NewPerftestClient(cc grpc.ClientConnInterface) PerftestClient {
 	return &perftestClient{cc}
 }
 
-func (c *perftestClient) GetPort(ctx context.Context, in *PerftestPortRequest, opts ...grpc.CallOption) (*PerftestPortResponse, error) {
+func (c *perftestClient) GetPort(ctx context.Context, in *PortRequest, opts ...grpc.CallOption) (*PortResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PerftestPortResponse)
+	out := new(PortResponse)
 	err := c.cc.Invoke(ctx, Perftest_GetPort_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *perftestClient) StartPerftest(ctx context.Context, in *PerftestRequest, opts ...grpc.CallOption) (*PerftestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerftestResponse)
+	err := c.cc.Invoke(ctx, Perftest_StartPerftest_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +63,8 @@ func (c *perftestClient) GetPort(ctx context.Context, in *PerftestPortRequest, o
 // All implementations must embed UnimplementedPerftestServer
 // for forward compatibility.
 type PerftestServer interface {
-	GetPort(context.Context, *PerftestPortRequest) (*PerftestPortResponse, error)
+	GetPort(context.Context, *PortRequest) (*PortResponse, error)
+	StartPerftest(context.Context, *PerftestRequest) (*PerftestResponse, error)
 	mustEmbedUnimplementedPerftestServer()
 }
 
@@ -62,8 +75,11 @@ type PerftestServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPerftestServer struct{}
 
-func (UnimplementedPerftestServer) GetPort(context.Context, *PerftestPortRequest) (*PerftestPortResponse, error) {
+func (UnimplementedPerftestServer) GetPort(context.Context, *PortRequest) (*PortResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPort not implemented")
+}
+func (UnimplementedPerftestServer) StartPerftest(context.Context, *PerftestRequest) (*PerftestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartPerftest not implemented")
 }
 func (UnimplementedPerftestServer) mustEmbedUnimplementedPerftestServer() {}
 func (UnimplementedPerftestServer) testEmbeddedByValue()                  {}
@@ -87,7 +103,7 @@ func RegisterPerftestServer(s grpc.ServiceRegistrar, srv PerftestServer) {
 }
 
 func _Perftest_GetPort_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PerftestPortRequest)
+	in := new(PortRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -99,7 +115,25 @@ func _Perftest_GetPort_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Perftest_GetPort_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PerftestServer).GetPort(ctx, req.(*PerftestPortRequest))
+		return srv.(PerftestServer).GetPort(ctx, req.(*PortRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Perftest_StartPerftest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PerftestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerftestServer).StartPerftest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Perftest_StartPerftest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerftestServer).StartPerftest(ctx, req.(*PerftestRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -115,7 +149,11 @@ var Perftest_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetPort",
 			Handler:    _Perftest_GetPort_Handler,
 		},
+		{
+			MethodName: "StartPerftest",
+			Handler:    _Perftest_StartPerftest_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "perftest.proto",
+	Metadata: "pkg/perftest/perftest.proto",
 }

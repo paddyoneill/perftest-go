@@ -22,10 +22,18 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	resp, err := client.GetPort(ctx, &perftest.PerftestPortRequest{})
+	portResp, err := client.GetPort(ctx, &perftest.PortRequest{})
 	if err != nil {
 		log.Fatalf("failed to run GetPort: %v", err)
 	}
+    
+    port := portResp.GetValue()
+	log.Printf("Reponse from gRPC server has port %d", port)
 
-	log.Printf("Reponse from gRPC server has port %d", resp.GetValue())
+    perftestResp, err := client.StartPerftest(ctx, &perftest.PerftestRequest{Port: port})
+    if err != nil {
+        log.Fatal("failed to start perftest")
+    }
+
+    log.Printf("Response from server: %s", perftestResp.GetMessage())
 }

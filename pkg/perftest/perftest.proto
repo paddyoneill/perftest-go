@@ -5,11 +5,21 @@ option go_package = "github.com/paddyoneill/perftest-go/pkg/perftest";
 package perftest;
 
 service Perftest {
-    rpc GetPort(PerftestPortRequest) returns (PerftestPortResponse) {}
+    rpc GetPort(PortRequest) returns (PortResponse) {}
+    rpc StartPerftest(PerftestRequest) returns (PerftestResponse) {}
 }
 
-message PerftestPortRequest {}
+message PortRequest {
+}
 
-message PerftestPortResponse {
+message PortResponse {
     int32 value = 1;
+}
+
+message PerftestRequest {
+    int32 port = 1;
+}
+
+message PerftestResponse {
+    string message = 1;
 }
