@@ -13,6 +13,7 @@ import (
 
 type PerftestServer struct {
 	perftest.UnimplementedPerftestServer
+    WorkerQueue <-chan string
 }
 
 func (server *PerftestServer) GetPort(context.Context, *perftest.PortRequest) (*perftest.PortResponse, error) {
@@ -31,14 +32,29 @@ func (server *PerftestServer) StartPerftest(ctx context.Context, req *perftest.P
 	return &perftest.PerftestResponse{Message: fmt.Sprintf("starting perftest on port %d", port)}, nil
 }
 
+func (server *PerftestServer) GetNic(ctx context.Context, req *perftest.NicRequest) (*perftest.NicResponse, error) {
+    select{
+    case nic := <-server.WorkerQueue:
+        return &perftest.NicResponse{Nic: nic}, nil        
+    
+    default:
+        return &perftest.NicResponse{}, fmt.Errorf("No available worker in queue")
+    }
+}
+
 func main() {
+    nics := []string{"bnxt_re0", "bnxt_re1", "bnxt_re2", "bnxt_re3"}
+    perftestServer := &PerftestServer{
+        WorkerQueue: initWorkerQueue(nics),
+    }
+
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatalf("failed to start server on port 8080: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	perftest.RegisterPerftestServer(grpcServer, &PerftestServer{})
+	perftest.RegisterPerftestServer(grpcServer, perftestServer)
 	log.Printf("gRPC service listening at %s", lis.Addr())
 
 	if err := grpcServer.Serve(lis); err != nil {
@@ -58,3 +74,4 @@ func getAvailablePort() (int32, error) {
 	}
 	return int32(lis.Addr().(*net.TCPAddr).Port), nil
 }
+

@@ -7,6 +7,7 @@ package perftest;
 service Perftest {
     rpc GetPort(PortRequest) returns (PortResponse) {}
     rpc StartPerftest(PerftestRequest) returns (PerftestResponse) {}
+    rpc GetNic(NicRequest) returns (NicResponse) {}
 }
 
 message PortRequest {
@@ -22,4 +23,11 @@ message PerftestRequest {
 
 message PerftestResponse {
     string message = 1;
+}
+
+message NicRequest {
+}
+
+message NicResponse {
+    string nic = 1;
 }

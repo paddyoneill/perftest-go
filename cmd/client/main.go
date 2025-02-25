@@ -15,6 +15,8 @@ import (
 var serverAddr string
 
 func main() {
+    //nics := []string{"bnxt_re0", "bnxt_re1"}
+
 	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to gRPC server: %v", err)
@@ -37,8 +39,13 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to start perftest")
 	}
-
 	log.Printf("Response from server: %s", perftestResp.GetMessage())
+
+    nicResp, err := client.GetNic(ctx, &perftest.NicRequest{})
+    if err != nil {
+        log.Fatalf("failed to get nic from server: %v", err)
+    }
+    log.Printf("Received nic %s from server", nicResp.GetNic())
 }
 
 func init() {

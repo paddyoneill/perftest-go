@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Perftest_GetPort_FullMethodName       = "/perftest.Perftest/GetPort"
 	Perftest_StartPerftest_FullMethodName = "/perftest.Perftest/StartPerftest"
+	Perftest_GetNic_FullMethodName        = "/perftest.Perftest/GetNic"
 )
 
 // PerftestClient is the client API for Perftest service.
@@ -29,6 +30,7 @@ const (
 type PerftestClient interface {
 	GetPort(ctx context.Context, in *PortRequest, opts ...grpc.CallOption) (*PortResponse, error)
 	StartPerftest(ctx context.Context, in *PerftestRequest, opts ...grpc.CallOption) (*PerftestResponse, error)
+	GetNic(ctx context.Context, in *NicRequest, opts ...grpc.CallOption) (*NicResponse, error)
 }
 
 type perftestClient struct {
@@ -59,12 +61,23 @@ func (c *perftestClient) StartPerftest(ctx context.Context, in *PerftestRequest,
 	return out, nil
 }
 
+func (c *perftestClient) GetNic(ctx context.Context, in *NicRequest, opts ...grpc.CallOption) (*NicResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(NicResponse)
+	err := c.cc.Invoke(ctx, Perftest_GetNic_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PerftestServer is the server API for Perftest service.
 // All implementations must embed UnimplementedPerftestServer
 // for forward compatibility.
 type PerftestServer interface {
 	GetPort(context.Context, *PortRequest) (*PortResponse, error)
 	StartPerftest(context.Context, *PerftestRequest) (*PerftestResponse, error)
+	GetNic(context.Context, *NicRequest) (*NicResponse, error)
 	mustEmbedUnimplementedPerftestServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedPerftestServer) GetPort(context.Context, *PortRequest) (*Port
 }
 func (UnimplementedPerftestServer) StartPerftest(context.Context, *PerftestRequest) (*PerftestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartPerftest not implemented")
+}
+func (UnimplementedPerftestServer) GetNic(context.Context, *NicRequest) (*NicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNic not implemented")
 }
 func (UnimplementedPerftestServer) mustEmbedUnimplementedPerftestServer() {}
 func (UnimplementedPerftestServer) testEmbeddedByValue()                  {}
@@ -138,6 +154,24 @@ func _Perftest_StartPerftest_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Perftest_GetNic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerftestServer).GetNic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Perftest_GetNic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerftestServer).GetNic(ctx, req.(*NicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Perftest_ServiceDesc is the grpc.ServiceDesc for Perftest service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var Perftest_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartPerftest",
 			Handler:    _Perftest_StartPerftest_Handler,
+		},
+		{
+			MethodName: "GetNic",
+			Handler:    _Perftest_GetNic_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
